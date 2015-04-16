@@ -1,0 +1,26 @@
+{
+  "name": "mongodb-collection-sample",
+  "description": "Sample documents from MongoDB collections.",
+  "version": "0.0.0",
+  "scripts": {
+    "check": "jshint",
+    "test": "mocha",
+    "postinstall": "node bin/postinstall.js",
+    "postuninstall": "node bin/postuninstall.js",
+    "ci": "npm run check && npm test"
+  },
+  "homepage": "http://mongodb-js.github.io/mongodb-collection-sample",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mongodb-js/mongodb-collection-sample.git"
+  },
+  "devDependencies": {
+    "jshint": "^2.6.3",
+    "mocha": "^2.2.1",
+    "pre-commit": "^1.0.6"
+  },
+  "license": "Apache 2",
+  "precommit": [
+    "check"
+  ]
+}
