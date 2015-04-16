@@ -4,7 +4,15 @@
 
 Sample documents from a MongoDB collection.
 
+## Install
+
+```
+npm install -g mongodb-collection-sample
+```
+
 ## Example
+
+After installing, you'll have a new method available for collections, `.sample()`.  Start up `mongo` shell and try the following:
 
 ```javascript
 // Returns up to 5 documents from the user collection.

@@ -22,5 +22,8 @@
   "license": "Apache 2",
   "precommit": [
     "check"
-  ]
+  ],
+  "dependencies": {
+    "mongorc": "git://github.com/mongodb-js/mongorc.git"
+  }
 }
