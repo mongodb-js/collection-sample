@@ -23,7 +23,7 @@ db.users.sample(4)
 
 // Returns up to 3 documents from the user collection where username
 // starts with L.
-db.users.sample(3), {username: /^L/})
+db.users.sample(3, {username: /^L/})
 
 // Returns up to 2 documents from the user collection where username
 // starts with L and only the username field.
