@@ -8,7 +8,7 @@ Great to have you here. These are a few ways you can help make this project bett
 ## Workflow
 
 1. [Fork the repository on GitHub](http://github.com/mongodb-js/mongodb-collection-sample)
-1. Create a new branch with a name that breifly describes your feature
+1. Create a new branch with a name that briefly describes your feature
 1. Implement your feature or bug fix
 1. Add new cases to `./test/index.test.js` and run them with `npm test`
 1. Add comments around your new code that explain what's happening
