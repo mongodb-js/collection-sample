@@ -6,13 +6,17 @@ Sample documents from a MongoDB collection.
 
 ## Install
 
+This module can be installed via the [node package manager (npm)](http://bit.ly/mongodb-js-setup).  
+Installing this module will modify your `~/.mongorc.js` so that when you start the `mongo` shell,
+a new `.sample()` function will be available for collections.
+
 ```
 npm install -g mongodb-collection-sample
 ```
 
 ## Example
 
-After installing, you'll have a new method available for collections, `.sample()`.  Start up `mongo` shell and try the following:
+After installing, start up `mongo` shell and try the following:
 
 ```javascript
 // Returns up to 5 documents from the user collection.
