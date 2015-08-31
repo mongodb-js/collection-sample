@@ -84,12 +84,11 @@ describe('mongodb-collection-sample', function() {
         .pipe(es.through(function(doc) {
           seen++;
           this.emit('data', doc);
-        },
-          function() {
-            this.emit('end');
-            assert.equal(seen, 5);
-            done();
-          }));
+        }, function() {
+          this.emit('end');
+          assert.equal(seen, 5);
+          done();
+        }));
     });
 
     it('should allow specifying a query', function(done) {
@@ -104,14 +103,13 @@ describe('mongodb-collection-sample', function() {
         .pipe(es.through(function(doc) {
           docs.push(doc);
           this.emit('data', doc);
-        },
-          function() {
-            this.emit('end');
-            assert.equal(docs.filter(function(d) {
-              return d.is_even === 1;
-            }).length, options.size);
-            done();
-          }));
+        }, function() {
+          this.emit('end');
+          assert.equal(docs.filter(function(d) {
+            return d.is_even === 1;
+          }).length, options.size);
+          done();
+        }));
     });
 
     it('should get a sample of 10 documents', function(done) {
@@ -120,12 +118,11 @@ describe('mongodb-collection-sample', function() {
         .pipe(es.through(function(doc) {
           seen++;
           this.emit('data', doc);
-        },
-          function() {
-            this.emit('end');
-            assert.equal(seen, 5);
-            done();
-          }));
+        }, function() {
+          this.emit('end');
+          assert.equal(seen, 5);
+          done();
+        }));
     });
 
     it('should return as many documents as possible if '
@@ -138,12 +135,11 @@ describe('mongodb-collection-sample', function() {
           .pipe(es.through(function(doc) {
             seen++;
             this.emit('data', doc);
-          },
-            function() {
-              this.emit('end');
-              assert.equal(seen, 1000);
-              done();
-            }));
+          }, function() {
+            this.emit('end');
+            assert.equal(seen, 1000);
+            done();
+          }));
       });
   });
 });
