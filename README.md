@@ -11,7 +11,7 @@ npm install --save mongodb-collection-sample
 ## Example
 
 ```javascript
-
+var createSample = require('mongodb-collection-sample');
 ```
 
 ## License
