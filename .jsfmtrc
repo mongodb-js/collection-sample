@@ -1,7 +1,4 @@
 {
-
-
-  "// docs, basically" : "https://github.com/paulirish/sublime-jsfmt#formatting-rules",
   "preset": "default",
   "plugins": [
         "esformatter-quotes",
