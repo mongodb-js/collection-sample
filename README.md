@@ -66,6 +66,31 @@ mongodb.connect('mongodb://localhost:27017', function(err, db){
 });
 ```
 
+## How It Works
+
+MongoDB version 3.1.6 and above: we use the $sample aggregation operator.
+
+```
+db.collectionName.aggregate([{$sample: {size: 100}}])
+```
+
+MongoDB version 3.1.5 and below: we implement a client-size reservoir sampler.
+
+- Query for a stream of _id values, limit 10000.
+- Read stream of `_id`s and save `sampleSize` randomly chosen values.
+- Then query selected random documents by _id.
+
+## Perfomance Notes
+
+For peak performance of the client-side reservoir sampler, keep the following guidelines in mind.
+
+- The initial query for a stream of `_id` values must be limited to some finite value. (Default 10k)
+- This query should be covered by an index
+- Since there's a limit, you may wish to bias for recent documents via a sort. (Default: {_id: -1})
+- [Don't sort on {$natural: -1}](https://docs.mongodb.org/manual/reference/operator/meta/natural): this forces a collection scan!
+    > Queries that include a sort by $natural order do not use indexes to fulfill the query predicate
+- When retrieving docs: batch using one $in to reduce network chattiness.
+
 ## License
 
 Apache 2

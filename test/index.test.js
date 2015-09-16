@@ -44,11 +44,11 @@ describe('mongodb-collection-sample', function() {
     });
   });
   describe('reservoir', function() {
-    it('should use `$natural: -1` as the default sort', function(done) {
+    it('should use `_id: -1` as the default sort', function(done) {
       getSampler('3.1.5', function(err, src) {
         assert.ifError(err);
         assert.deepEqual(src.sort, {
-          $natural: -1
+          _id: -1
         });
         done();
       });
