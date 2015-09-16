@@ -44,11 +44,11 @@ describe('mongodb-collection-sample', function() {
     });
   });
   describe('reservoir', function() {
-    it('should use `$natural: -1` as the default sort', function(done) {
+    it('should use `_id: -1` as the default sort', function(done) {
       getSampler('3.1.5', function(err, src) {
         assert.ifError(err);
         assert.deepEqual(src.sort, {
-          $natural: -1
+          _id: -1
         });
         done();
       });
@@ -60,7 +60,9 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _db) {
-        if (err) return done(err);
+        if (err) {
+          return done(err);
+        }
         db = _db;
 
         var docs = _range(0, 1000).map(function(i) {
@@ -74,7 +76,9 @@ describe('mongodb-collection-sample', function() {
     });
 
     after(function(done) {
-      if (!db) return done();
+      if (!db) {
+        return done();
+      }
       db.dropCollection('haystack', done);
     });
 
