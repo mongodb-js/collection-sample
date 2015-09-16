@@ -88,7 +88,9 @@ For peak performance of the client-side reservoir sampler, keep the following gu
 - This query should be covered by an index
 - Since there's a limit, you may wish to bias for recent documents via a sort. (Default: {_id: -1})
 - [Don't sort on {$natural: -1}](https://docs.mongodb.org/manual/reference/operator/meta/natural): this forces a collection scan!
-    > Queries that include a sort by $natural order do not use indexes to fulfill the query predicate
+
+> Queries that include a sort by $natural order do not use indexes to fulfill the query predicate
+
 - When retrieving docs: batch using one $in to reduce network chattiness.
 
 ## License
