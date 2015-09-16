@@ -60,7 +60,9 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _db) {
-        if (err) return done(err);
+        if (err) {
+          return done(err);
+        }
         db = _db;
 
         var docs = _range(0, 1000).map(function(i) {
@@ -74,7 +76,9 @@ describe('mongodb-collection-sample', function() {
     });
 
     after(function(done) {
-      if (!db) return done();
+      if (!db) {
+        return done();
+      }
       db.dropCollection('haystack', done);
     });
 
