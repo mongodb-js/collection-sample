@@ -35,7 +35,7 @@
     "mocha": "^2.3.3",
     "mongodb": "^2.0.45",
     "mongodb-js-precommit": "^0.2.2",
-    "mongodb-runner": "mongodb-js/runner",
+    "mongodb-runner": "3.0.0",
     "pre-commit": "^1.1.1",
     "proxyquire": "^1.7.3"
   }
