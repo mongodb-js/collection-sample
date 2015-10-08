@@ -14,7 +14,6 @@ cache:
 notifications:
   flowdock: e3dc17bc8a2c1b3412abe3e5747f8291
 env:
-  - DEBUG=mon* MONGODB_VERSION=2.4.x
   - DEBUG=mon* MONGODB_VERSION=2.6.x
   - DEBUG=mon* MONGODB_VERSION=3.0.x
   - DEBUG=mon* MONGODB_VERSION=3.1.x
