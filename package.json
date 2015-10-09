@@ -7,9 +7,7 @@
     "pretest": "mongodb-runner start",
     "test": "mocha",
     "posttest": "mongodb-runner stop",
-    "preci": "npm run pretest",
-    "ci": "npm run check && npm test",
-    "postci": "npm run posttest"
+    "ci": "npm run check && npm test"
   },
   "precommit": [
     "check"
