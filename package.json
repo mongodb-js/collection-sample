@@ -7,7 +7,8 @@
     "pretest": "mongodb-runner start",
     "test": "mocha",
     "posttest": "mongodb-runner stop",
-    "ci": "npm run check && npm test"
+    "ci": "npm run check && npm test",
+    "fmt": "mongodb-js-fmt test/*.js bin/*.js index.js"
   },
   "precommit": [
     "check"
@@ -20,7 +21,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "debug": "^2.2.0",
-    "event-stream": "^3.3.1",
+    "event-stream": "^3.3.2",
     "get-mongodb-version": "0.0.1",
     "lodash.defaults": "^3.1.2",
     "reservoir-stream": "0.0.2",
@@ -28,13 +29,14 @@
   },
   "devDependencies": {
     "backoff": "^2.4.1",
-    "eslint-config-mongodb-js": "^0.1.6",
+    "eslint-config-mongodb-js": "^1.0.3",
     "lodash.range": "^3.0.1",
     "mocha": "^2.3.3",
-    "mongodb": "^2.0.45",
+    "mongodb": "^2.0.46",
     "mongodb-js-precommit": "^0.2.2",
-    "mongodb-runner": "^3.1.1",
-    "pre-commit": "^1.1.1",
+    "mongodb-js-fmt": "0.0.3",
+    "mongodb-runner": "^3.1.8",
+    "pre-commit": "^1.1.2",
     "proxyquire": "^1.7.3"
   }
 }
