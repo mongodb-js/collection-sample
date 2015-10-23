@@ -132,18 +132,18 @@ describe('mongodb-collection-sample', function() {
     it('should return as many documents as possible if '
       + 'the requested sample size is larger than the '
       + 'collection size', function(done) {
-      var seen = 0;
-      sample(db, 'haystack', {
-        size: 2000
-      })
-        .pipe(es.through(function(doc) {
-          seen++;
-          this.emit('data', doc);
-        }, function() {
-          this.emit('end');
-          assert.equal(seen, 1000);
-          done();
-        }));
-    });
+        var seen = 0;
+        sample(db, 'haystack', {
+          size: 2000
+        })
+          .pipe(es.through(function(doc) {
+            seen++;
+            this.emit('data', doc);
+          }, function() {
+            this.emit('end');
+            assert.equal(seen, 1000);
+            done();
+          }));
+      });
   });
 });
