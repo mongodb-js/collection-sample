@@ -97,8 +97,8 @@ For peak performance of the client-side reservoir sampler, keep the following gu
 
 Apache 2
 
-[travis_img]: https://secure.travis-ci.org/mongodb-js/mongodb-collection-sample.svg?branch=master
-[travis_url]: https://travis-ci.org/mongodb-js/mongodb-collection-sample
+[travis_img]: https://secure.travis-ci.org/mongodb-js/collection-sample.svg?branch=master
+[travis_url]: https://travis-ci.org/mongodb-js/collection-sample
 [npm_img]: https://img.shields.io/npm/v/mongodb-collection-sample.svg
 [npm_url]: https://www.npmjs.org/package/mongodb-collection-sample
 [gitter_img]: https://badges.gitter.im/Join%20Chat.svg
