@@ -32,7 +32,7 @@
     "eslint-config-mongodb-js": "^1.0.5",
     "lodash.range": "^3.0.1",
     "mocha": "^2.3.3",
-    "mongodb": "^2.0.48",
+    "mongodb": "^2.1.1",
     "mongodb-js-precommit": "^0.2.5",
     "mongodb-js-fmt": "0.0.3",
     "mongodb-runner": "^3.1.14",
