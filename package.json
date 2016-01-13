@@ -23,7 +23,7 @@
     "debug": "^2.2.0",
     "event-stream": "^3.3.2",
     "get-mongodb-version": "0.0.1",
-    "lodash.defaults": "^3.1.2",
+    "lodash.defaults": "^4.0.0",
     "reservoir-stream": "0.0.2",
     "semver": "^5.0.3"
   },
