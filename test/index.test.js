@@ -43,7 +43,35 @@ describe('mongodb-collection-sample', function() {
       });
     });
   });
-  describe('reservoir', function() {
+
+  describe('Reservoir Sampler chunk sampling', function() {
+    var db;
+
+    before(function(done) {
+      this.timeout(10000);
+      mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _db) {
+        if (err) {
+          return done(err);
+        }
+        db = _db;
+
+        var docs = _range(0, 15000).map(function(i) {
+          return {
+            _id: 'needle_' + i,
+            is_even: i % 2
+          };
+        });
+        db.collection('haystack').insert(docs, done);
+      });
+    });
+
+    after(function(done) {
+      if (!db) {
+        return done();
+      }
+      db.dropCollection('haystack', done);
+    });
+
     it('should use `_id: -1` as the default sort', function(done) {
       getSampler('3.1.5', function(err, src) {
         assert.ifError(err);
@@ -52,6 +80,30 @@ describe('mongodb-collection-sample', function() {
         });
         done();
       });
+    });
+
+    it('should have the test.haystack collection with 15000 docs', function(done) {
+      db.collection('haystack').count(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res, 15000);
+        done();
+      });
+    });
+
+    it('should sample 10000 docs in several chunks', function(done) {
+      var seen = 0;
+      sample(db, 'haystack', {
+        size: 10000,
+        chunkSize: 1234
+      })
+        .pipe(es.through(function(doc) {
+          seen++;
+          this.emit('data', doc);
+        }, function() {
+          this.emit('end');
+          assert.equal(seen, 10000);
+          done();
+        }));
     });
   });
 
