@@ -19,6 +19,12 @@
     "url": "git://github.com/mongodb-js/mongodb-collection-sample.git"
   },
   "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/mongodb-js/mongodb-collection-sample/issues"
+  },
+  "bin": {
+    "mongodb-collection-sample": "bin/mongodb-collection-sample.js"
+  },
   "dependencies": {
     "debug": "^2.2.0",
     "event-stream": "^3.3.2",
@@ -39,5 +45,11 @@
     "mongodb-runner": "^3.1.14",
     "pre-commit": "^1.1.2",
     "proxyquire": "^1.7.3"
+  },
+  "optionalDependencies": {
+    "event-stream": "^3.3.2",
+    "mongodb-extended-json": "^1.6.2",
+    "mongodb-ns": "^1.0.3",
+    "yargs": "^3.32.0"
   }
 }
