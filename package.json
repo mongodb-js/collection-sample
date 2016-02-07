@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "check": "mongodb-js-precommit",
-    "pretest": "mongodb-runner start",
-    "test": "mocha",
-    "posttest": "mongodb-runner stop",
+    "pretest": "DEBUG=* mongodb-runner start",
+    "test": "DEBUG=* mocha",
+    "posttest": "DEBUG=* mongodb-runner stop",
     "ci": "npm run check && npm test",
     "fmt": "mongodb-js-fmt test/*.js bin/*.js index.js"
   },
