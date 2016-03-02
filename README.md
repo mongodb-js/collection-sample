@@ -80,6 +80,11 @@ MongoDB version 3.1.5 and below: we implement a client-size reservoir sampler.
 - Read stream of `_id`s and save `sampleSize` randomly chosen values.
 - Then query selected random documents by _id.
 
+The two modes, illustrated:
+
+[![][sampling_post_316_png]][sampling_post_316_svg]
+[![][sampling_pre_316_png]][sampling_pre_316_svg]
+
 ## Perfomance Notes
 
 For peak performance of the client-side reservoir sampler, keep the following guidelines in mind.
@@ -102,3 +107,7 @@ Apache 2
 [npm_img]: https://img.shields.io/npm/v/mongodb-collection-sample.svg
 [npm_url]: https://www.npmjs.org/package/mongodb-collection-sample
 [gitter_img]: https://badges.gitter.im/Join%20Chat.svg
+[sampling_post_316_png]: docs/sampling_analyzing_post_316.png?raw=true
+[sampling_post_316_svg]: docs/sampling_analyzing_post_316.svg
+[sampling_pre_316_png]: docs/sampling_analyzing_pre_316.png?raw=true
+[sampling_pre_316_svg]: docs/sampling_analyzing_pre_316.svg
