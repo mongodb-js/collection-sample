@@ -26,13 +26,13 @@ var runnerOpts = {
 };
 
 before(function(done) {
-  this.timeout(20000);
+  this.timeout(40000);
   debug('launching local replicaset.');
   runner(runnerOpts, done);
 });
 
 after(function(done) {
-  this.timeout(10000);
+  this.timeout(20000);
   debug('stopping replicaset.');
   runner.stop(runnerOpts, done);
 });
