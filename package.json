@@ -4,9 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "check": "mongodb-js-precommit",
-    "pretest": "mongodb-runner start --topology=replicaset",
     "test": "mocha",
-    "posttest": "mongodb-runner stop --topology=replicaset",
     "ci": "npm run check && npm test",
     "fmt": "mongodb-js-fmt test/*.js bin/*.js index.js"
   },

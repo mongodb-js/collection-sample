@@ -7,6 +7,7 @@ var ReadPreference = require('mongodb-read-preference');
 var sample = require('../');
 var ReservoirSampler = require('../lib/reservoir-sampler');
 var NativeSampler = require('../lib/native-sampler');
+var runner = require('mongodb-runner');
 
 var debug = require('debug')('mongodb-collection-sample:test');
 
@@ -19,6 +20,22 @@ var getSampler = function(version, fn) {
     }
   }).getSampler({}, 'pets', {}, fn);
 };
+
+var runnerOpts = {
+  topology: 'replicaset'
+};
+
+before(function(done) {
+  this.timeout(20000);
+  debug('launching local replicaset.');
+  runner(runnerOpts, done);
+});
+
+after(function(done) {
+  this.timeout(10000);
+  debug('stopping replicaset.');
+  runner.stop(runnerOpts, done);
+});
 
 describe('mongodb-collection-sample', function() {
   before(function(done) {
@@ -276,7 +293,7 @@ describe('mongodb-collection-sample', function() {
         done(err2);
       });
       stream.on('data', function() {
-        count ++;
+        count++;
       });
       stream.on('end', function() {
         assert.equal(count, opts.size);
