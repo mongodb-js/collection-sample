@@ -26,7 +26,7 @@ var runnerOpts = {
 };
 
 before(function(done) {
-  this.timeout(40000);
+  this.timeout(100000);
   debug('launching local replicaset.');
   runner(runnerOpts, done);
 });
