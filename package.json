@@ -4,7 +4,7 @@
   "version": "1.0.1",
   "scripts": {
     "check": "mongodb-js-precommit",
-    "pretest": "mongodb-runner start",
+    "pretest": "DEBUG=* mongodb-runner start",
     "test": "mocha",
     "posttest": "mongodb-runner stop",
     "ci": "npm run check && npm test",
