@@ -1,7 +1,7 @@
 {
   "name": "mongodb-collection-sample",
   "description": "Sample documents from MongoDB collections.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "scripts": {
     "check": "mongodb-js-precommit",
     "test": "mocha",
