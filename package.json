@@ -4,9 +4,7 @@
   "version": "1.0.1",
   "scripts": {
     "check": "mongodb-js-precommit",
-    "pretest": "mongodb-runner start",
     "test": "mocha",
-    "posttest": "mongodb-runner stop",
     "ci": "npm run check && npm test",
     "fmt": "mongodb-js-fmt test/*.js bin/*.js index.js"
   },
@@ -25,6 +23,7 @@
     "get-mongodb-version": "0.0.1",
     "lodash.chunk": "^4.0.0",
     "lodash.defaults": "^3.1.2",
+    "mongodb-read-preference": "^1.0.6",
     "reservoir": "^0.1.2",
     "semver": "^5.0.3"
   },

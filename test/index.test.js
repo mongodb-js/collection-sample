@@ -3,9 +3,13 @@ var assert = require('assert');
 var _range = require('lodash.range');
 var es = require('event-stream');
 var mongodb = require('mongodb');
+var ReadPreference = require('mongodb-read-preference');
 var sample = require('../');
 var ReservoirSampler = require('../lib/reservoir-sampler');
 var NativeSampler = require('../lib/native-sampler');
+var runner = require('mongodb-runner');
+
+var debug = require('debug')('mongodb-collection-sample:test');
 
 var getSampler = function(version, fn) {
   proxyquire('../lib', {
@@ -17,7 +21,36 @@ var getSampler = function(version, fn) {
   }).getSampler({}, 'pets', {}, fn);
 };
 
+var runnerOpts = {
+  topology: 'replicaset'
+};
+
+before(function(done) {
+  this.timeout(100000);
+  debug('launching local replicaset.');
+  runner(runnerOpts, done);
+});
+
+after(function(done) {
+  this.timeout(20000);
+  debug('stopping replicaset.');
+  runner.stop(runnerOpts, done);
+});
+
 describe('mongodb-collection-sample', function() {
+  before(function(done) {
+    // output the current version for debug purpose
+    mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, db) {
+      assert.ifError(err);
+      db.admin().serverInfo(function(err2, info) {
+        assert.ifError(err2);
+        debug('running tests with MongoDB version %s.', info.version);
+        db.close();
+        done();
+      });
+    });
+  });
+
   describe('polyfill', function() {
     it('should use reservoir sampling if version is 3.1.5', function(done) {
       getSampler('3.1.5', function(err, src) {
@@ -196,6 +229,76 @@ describe('mongodb-collection-sample', function() {
           assert.equal(seen, 1000);
           done();
         }));
+    });
+  });
+
+  describe('topology', function() {
+    this.timeout(30000);
+
+    var dbPrim;
+    var dbSec;
+    var options = {
+      readPreference: ReadPreference.nearest
+    };
+
+    before(function(done) {
+      mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _dbPrim) {
+        if (err) {
+          return done(err);
+        }
+        dbPrim = _dbPrim;
+        var docs = _range(0, 100).map(function(i) {
+          return {
+            _id: 'needle_' + i,
+            is_even: i % 2
+          };
+        });
+        dbPrim.collection('haystack').insert(docs, {w: 3}, function() {
+          mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(errInsert, _dbSec) {
+            if (errInsert) {
+              return done(errInsert);
+            }
+            dbSec = _dbSec;
+            dbSec.collection('haystack', options).count(function(errCount, res) {
+              assert.ifError(errCount);
+              assert.equal(res, 100);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    after(function(done) {
+      if (!dbPrim) {
+        return done();
+      }
+      dbPrim.dropCollection('haystack', function() {
+        dbPrim.close();
+        dbSec.close();
+        done();
+      });
+    });
+
+    it('should sample correctly when connected to a secondary node', function(done) {
+      var opts = {
+        size: 5,
+        query: {}
+      };
+      // Get a stream of sample documents from the collection and make sure
+      // 5 documents have been returned.
+      var count = 0;
+      var stream = sample(dbSec, 'haystack', opts);
+      stream.on('error', function(err2) {
+        done(err2);
+      });
+      stream.on('data', function() {
+        count++;
+      });
+      stream.on('end', function() {
+        assert.equal(count, opts.size);
+        done();
+      });
     });
   });
 });
