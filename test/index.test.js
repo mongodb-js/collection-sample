@@ -81,7 +81,7 @@ describe('mongodb-collection-sample', function() {
     var db;
 
     before(function(done) {
-      this.timeout(10000);
+      this.timeout(30000);
       mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _db) {
         if (err) {
           return done(err);
