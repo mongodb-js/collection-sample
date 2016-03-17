@@ -7,6 +7,8 @@ var toNS = require('mongodb-ns');
 var EJSON = require('mongodb-extended-json');
 var pkg = require('../package.json');
 
+// var debug = require('debug')('mongodb-collection-sample:bin');
+
 var argv = require('yargs')
   .usage('Usage: $0 <uri> <ns> [options]')
   .demand(2)
@@ -14,6 +16,12 @@ var argv = require('yargs')
     alias: 'sample',
     default: 100,
     describe: 'The number of documents to sample.'
+  })
+  .option('o', {
+    alias: 'output',
+    type: 'boolean',
+    describe: 'Print the sampled documents to stdout.',
+    default: true
   })
   .describe('debug', 'Enable debug messages.')
   .describe('version', 'Show version.')
@@ -53,7 +61,7 @@ mongodb.connect(uri, function(err, conn) {
 
   sample(db, ns.collection, options)
     .pipe(es.map(function(data, cb) {
-      if (data) {
+      if (data && argv.output) {
         console.log(EJSON.stringify(data, null, 2));
       }
       cb(null, data);
