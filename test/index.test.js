@@ -238,7 +238,7 @@ describe('mongodb-collection-sample', function() {
     var dbPrim;
     var dbSec;
     var options = {
-      readPreference: ReadPreference.nearest
+      readPreference: ReadPreference.secondaryPreferred
     };
 
     before(function(done) {
