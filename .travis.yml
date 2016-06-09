@@ -17,4 +17,4 @@ notifications:
 env:
   - DEBUG=mon* MONGODB_VERSION=2.6.x
   - DEBUG=mon* MONGODB_VERSION=3.0.x
-  - DEBUG=mon* MONGODB_VERSION=3.1.x
+  - DEBUG=mon* MONGODB_VERSION=3.2.x
