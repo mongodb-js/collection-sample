@@ -9,6 +9,8 @@ var pkg = require('../package.json');
 
 // var debug = require('debug')('mongodb-collection-sample:bin');
 
+/* eslint no-console: 0*/
+
 var argv = require('yargs')
   .usage('Usage: $0 <uri> <ns> [options]')
   .demand(2)
