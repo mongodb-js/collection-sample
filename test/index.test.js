@@ -90,7 +90,7 @@ describe('mongodb-collection-sample', function() {
         }
         db = _db;
 
-        var docs = _range(0, 15000).map(function(i) {
+        var docs = _range(0, 150).map(function(i) {
           return {
             _id: 'needle_' + i,
             is_even: i % 2,
@@ -113,7 +113,7 @@ describe('mongodb-collection-sample', function() {
     it('should have the test.haystack collection with 15000 docs', function(done) {
       db.collection('haystack').count(function(err, res) {
         assert.ifError(err);
-        assert.equal(res, 15000);
+        assert.equal(res, 150);
         done();
       });
     });
