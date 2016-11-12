@@ -110,7 +110,7 @@ describe('mongodb-collection-sample', function() {
       db.dropCollection('haystack', done);
     });
 
-    it('should have the test.haystack collection with 15000 docs', function(done) {
+    it('should have the test.haystack collection with 150 docs', function(done) {
       db.collection('haystack').count(function(err, res) {
         assert.ifError(err);
         assert.equal(res, 150);
