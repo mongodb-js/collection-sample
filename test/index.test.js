@@ -23,7 +23,8 @@ var getSampler = function(version, fn) {
 };
 
 var runnerOpts = {
-  topology: 'replicaset'
+  topology: 'replicaset',
+  storageEngine: 'mmapv1'
 };
 
 before(function(done) {
