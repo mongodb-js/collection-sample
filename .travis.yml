@@ -1,19 +1,11 @@
+sudo: true
 language: node_js
 node_js:
-  - 4   
-before_install:
-  - npm install -g npm@3
-  - npm config set loglevel error
-  - npm config -g list -l
-  - npm --version
+  - 6
 script: npm run-script ci
-# Disable cache to force travis to use newer version of node
-#cache:
-#  directories:
-#    - node_modules
-# Post build notifications to the Integrations Flowdock
-notifications:
-  flowdock: e3dc17bc8a2c1b3412abe3e5747f8291
+cache:
+  directories:
+    - node_modules
 env:
   - DEBUG=mon* MONGODB_VERSION=2.6.x
   - DEBUG=mon* MONGODB_VERSION=3.0.x

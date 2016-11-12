@@ -66,6 +66,18 @@ mongodb.connect('mongodb://localhost:27017', function(err, db){
 });
 ```
 
+## Options
+
+Supported options that can be passed to `sample(db, coll, options)` are
+
+- `query`: the filter to be used, default is `{}`
+- `size`: the number of documents to sample, default is `5`
+- `fields`: the fields you want returned (projection), default is `null`
+- `sort`: the sort field and direction, default is `{_id: -1}`
+- `maxTimeMS`: the maxTimeMS value after which the operation is terminated, default is `undefined`
+- `promoteValues`: boolean whether certain BSON values should be cast to native Javascript values or not. Default is `true`
+
+
 ## How It Works
 
 MongoDB version 3.1.6 and above: we use the $sample aggregation operator.
