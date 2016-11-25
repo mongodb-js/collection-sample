@@ -4,6 +4,7 @@
   "version": "1.2.2",
   "scripts": {
     "check": "mongodb-js-precommit",
+    "pretest": "mongodb-runner install",
     "test": "mocha",
     "ci": "npm run check && npm test",
     "fmt": "mongodb-js-fmt test/*.js bin/*.js index.js"
