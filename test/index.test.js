@@ -118,6 +118,22 @@ describe('mongodb-collection-sample', function() {
       });
     });
 
+    it('should only return the fields requested', function(done) {
+      sample(db, 'haystack', {
+        size: 10,
+        fields: ['is_even', 'double']
+      })
+        .pipe(es.through(function(doc) {
+          assert.ok(doc.is_even !== undefined);
+          assert.ok(doc.double !== undefined);
+          assert.equal(doc.int, undefined);
+          assert.equal(doc.long, undefined);
+        }, function() {
+          this.emit('end');
+          done();
+        }));
+    });
+
     it('should promote numeric values by default', function(done) {
       sample(db, 'haystack', {
         size: 1,
