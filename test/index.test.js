@@ -121,7 +121,7 @@ describe('mongodb-collection-sample', function() {
     it('should only return the fields requested', function(done) {
       sample(db, 'haystack', {
         size: 10,
-        fields: ['is_even', 'double']
+        project: {is_even: 1, double: 1}
       })
         .pipe(es.through(function(doc) {
           assert.ok(doc.is_even !== undefined);
@@ -279,7 +279,7 @@ describe('mongodb-collection-sample', function() {
       var docs = [];
       var options = {
         size: 10,
-        query: {
+        filter: {
           is_even: 1
         }
       };
@@ -378,7 +378,7 @@ describe('mongodb-collection-sample', function() {
     it('should sample correctly when connected to a secondary node', function(done) {
       var opts = {
         size: 5,
-        query: {}
+        filter: {}
       };
       // Get a stream of sample documents from the collection and make sure
       // 5 documents have been returned.
