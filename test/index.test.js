@@ -23,7 +23,8 @@ var getSampler = function(version, fn) {
 };
 
 var runnerOpts = {
-  topology: 'replicaset'
+  topology: 'replicaset',
+  port: 31017
 };
 
 before(function(done) {
@@ -41,7 +42,7 @@ after(function(done) {
 describe('mongodb-collection-sample', function() {
   before(function(done) {
     // output the current version for debug purpose
-    mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, db) {
+    mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, db) {
       assert.ifError(err);
       db.admin().serverInfo(function(err2, info) {
         assert.ifError(err2);
@@ -84,7 +85,7 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _db) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
         if (err) {
           return done(err);
         }
@@ -116,6 +117,22 @@ describe('mongodb-collection-sample', function() {
         assert.equal(res, 150);
         done();
       });
+    });
+
+    it('should only return the fields requested', function(done) {
+      sample(db, 'haystack', {
+        size: 10,
+        fields: {'is_even': 1, 'double': 1}
+      })
+        .pipe(es.through(function(doc) {
+          assert.ok(doc.is_even !== undefined);
+          assert.ok(doc.double !== undefined);
+          assert.equal(doc.int, undefined);
+          assert.equal(doc.long, undefined);
+        }, function() {
+          this.emit('end');
+          done();
+        }));
     });
 
     it('should promote numeric values by default', function(done) {
@@ -161,7 +178,7 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _db) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
         if (err) {
           return done(err);
         }
@@ -223,7 +240,7 @@ describe('mongodb-collection-sample', function() {
     var db;
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _db) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
         if (err) {
           return done(err);
         }
@@ -321,7 +338,7 @@ describe('mongodb-collection-sample', function() {
     };
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:27017/test', function(err, _dbPrim) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _dbPrim) {
         if (err) {
           return done(err);
         }
@@ -333,7 +350,7 @@ describe('mongodb-collection-sample', function() {
           };
         });
         dbPrim.collection('haystack').insert(docs, {w: 3}, function() {
-          mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(errInsert, _dbSec) {
+          mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(errInsert, _dbSec) {
             if (errInsert) {
               return done(errInsert);
             }
