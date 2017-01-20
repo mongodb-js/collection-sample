@@ -122,7 +122,7 @@ describe('mongodb-collection-sample', function() {
     it('should only return the fields requested', function(done) {
       sample(db, 'haystack', {
         size: 10,
-        fields: ['is_even', 'double']
+        fields: {'is_even': 1, 'double': 1}
       })
         .pipe(es.through(function(doc) {
           assert.ok(doc.is_even !== undefined);

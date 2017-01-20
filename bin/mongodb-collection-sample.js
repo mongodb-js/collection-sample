@@ -15,9 +15,21 @@ var argv = require('yargs')
   .usage('Usage: $0 <uri> <ns> [options]')
   .demand(2)
   .option('n', {
-    alias: 'sample',
+    alias: 'size',
     default: 100,
     describe: 'The number of documents to sample.'
+  })
+  .option('f', {
+    alias: 'fields',
+    type: 'string',
+    describe: 'field projection object',
+    default: null
+  })
+  .option('q', {
+    alias: 'query',
+    type: 'string',
+    describe: 'query filter',
+    default: '{}'
   })
   .option('o', {
     alias: 'output',
@@ -40,7 +52,7 @@ var uri = argv._[0];
 if (!uri.startsWith('mongodb://')) {
   uri = 'mongodb://' + uri;
 }
-var sampleSize = parseInt(argv.sample, 10);
+var sampleSize = parseInt(argv.size, 10);
 
 if (argv.version) {
   console.error(pkg.version);
@@ -58,8 +70,12 @@ mongodb.connect(uri, function(err, conn) {
 
   var options = {
     size: sampleSize,
-    query: {}
+    query: JSON.parse(argv.query)
   };
+
+  if (argv.fields !== null) {
+    options.fields = JSON.parse(argv.fields);
+  }
 
   sample(db, ns.collection, options)
     .pipe(es.map(function(data, cb) {

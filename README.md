@@ -72,7 +72,7 @@ Supported options that can be passed to `sample(db, coll, options)` are
 
 - `query`: the filter to be used, default is `{}`
 - `size`: the number of documents to sample, default is `5`
-- `fields`: the fields you want returned (projection), default is `null`
+- `fields`: the fields you want returned (projection object), default is `null`
 - `sort`: the sort field and direction, default is `{_id: -1}`
 - `maxTimeMS`: the maxTimeMS value after which the operation is terminated, default is `undefined`
 - `promoteValues`: boolean whether certain BSON values should be cast to native Javascript values or not. Default is `true`
@@ -97,7 +97,7 @@ The two modes, illustrated:
 [![][sampling_post_316_png]][sampling_post_316_svg]
 [![][sampling_pre_316_png]][sampling_pre_316_svg]
 
-## Perfomance Notes
+## Performance Notes
 
 For peak performance of the client-side reservoir sampler, keep the following guidelines in mind.
 
