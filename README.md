@@ -80,15 +80,30 @@ Supported options that can be passed to `sample(db, coll, options)` are
 
 ## How It Works
 
-MongoDB version 3.1.6 and above: we use the $sample aggregation operator.
+#### Native Sampler
+
+MongoDB version 3.1.6 and above generally uses the `$sample` aggregation operator:
 
 ```
-db.collectionName.aggregate([{$sample: {size: 100}}])
+db.collectionName.aggregate([
+  {$match: <query>},
+  {$sample: {size: <size>}},
+  {$project: <fields>},
+  {$sort: <sort>}
+])
 ```
 
-MongoDB version 3.1.5 and below: we implement a client-size reservoir sampler.
+However, if more documents are requested than are in the collection, executes
+a regular `find()` to fetch all documents instead. If the sample size is
+above 5% of the collection count, the algorithm falls back to the reservoir
+sampling, see below.
 
-- Query for a stream of _id values, limit 10000.
+
+#### Reservoir Sampling
+
+For MongoDB version 3.1.5 and below we use a client-size reservoir sampling algorithm.
+
+- Query for a stream of _id values, limit 10,000.
 - Read stream of `_id`s and save `sampleSize` randomly chosen values.
 - Then query selected random documents by _id.
 
