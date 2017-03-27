@@ -81,6 +81,118 @@ describe('mongodb-collection-sample', function() {
     });
   });
 
+  describe('Native Sampler pipelines', function() {
+    this.timeout(30000);
+    var db;
+
+    before(function(done) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
+        if (err) {
+          return done(err);
+        }
+        db = _db;
+
+        var docs = _range(0, 1000).map(function(i) {
+          return {
+            _id: 'needle_' + i,
+            is_even: i % 2,
+            long: bson.Long.fromString('1234567890'),
+            double: 0.23456,
+            int: 1234
+          };
+        });
+        db.collection('haystack').insert(docs, done);
+      });
+    });
+
+    after(function(done) {
+      if (!db) {
+        return done();
+      }
+      db.dropCollection('haystack', done);
+    });
+
+    context('when requesting 3% of all documents', function() {
+      var opts = {
+        size: 30
+      };
+      it('has a $sample in the pipeline', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            expect(sampler.pipeline).to.have.lengthOf(1);
+            expect(sampler.pipeline[0]).to.have.all.keys('$sample');
+            expect(sampler.pipeline[0].$sample).to.be.deep.equal({size: 30});
+            done();
+          });
+      });
+    });
+    context('when requesting 30% of all documents', function() {
+      var opts = {
+        size: 300
+      };
+      it('falls back to reservoir sampling', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            expect(sampler.pipeline).to.not.exist;
+            done();
+          });
+      });
+    });
+    context('when requesting 300% of all documents', function() {
+      var opts = {
+        size: 3000
+      };
+      it('does not contain a $sample in the pipeline', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            expect(sampler.pipeline).to.be.an('array');
+            expect(sampler.pipeline).to.have.lengthOf(0);
+            done();
+          });
+      });
+    });
+    context('when using fields', function() {
+      var opts = {
+        size: 30,
+        fields: {'is_even': 1, 'double': 1}
+      };
+      it('has a $project stage at the end of the pipeline', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            var lastStage = sampler.pipeline[sampler.pipeline.length - 1];
+            expect(lastStage).to.have.all.keys('$project');
+            expect(lastStage.$project).to.be.deep.equal({is_even: 1, double: 1});
+            done();
+          });
+      });
+    });
+    context('when using query', function() {
+      var opts = {
+        size: 10,
+        query: {is_even: 1}
+      };
+      it('has a $match stage at the beginning of the pipeline', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            var firstStage = sampler.pipeline[0];
+            expect(firstStage).to.have.all.keys('$match');
+            expect(firstStage.$match).to.be.deep.equal({is_even: 1});
+            done();
+          });
+      });
+    });
+  });
+
 
   describe('promoteValues', function() {
     var db;
