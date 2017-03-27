@@ -12,7 +12,6 @@ var NativeSampler = require('../lib/native-sampler');
 var runner = require('mongodb-runner');
 var bson = require('bson');
 var semver = require('semver');
-var getKernelVersion = require('get-mongodb-version');
 
 var debug = require('debug')('mongodb-collection-sample:test');
 
@@ -29,6 +28,14 @@ var getSampler = function(version, fn) {
 var runnerOpts = {
   topology: 'replicaset',
   port: 31017
+};
+
+var versionSupportsSample;
+
+var skipIfSampleUnsopported = function() {
+  if (!versionSupportsSample) {
+    this.skip();
+  }
 };
 
 before(function(done) {
@@ -51,6 +58,7 @@ describe('mongodb-collection-sample', function() {
       db.admin().serverInfo(function(err2, info) {
         expect(err2).to.not.exist;
         debug('running tests with MongoDB version %s.', info.version);
+        versionSupportsSample = semver.gte(info.version, '3.1.6');
         db.close();
         done();
       });
@@ -88,19 +96,11 @@ describe('mongodb-collection-sample', function() {
     var db;
 
     before(function(done) {
-      var test = this;
       mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
         if (err) {
           return done(err);
         }
         db = _db;
-        getKernelVersion({db: db}, function(errVersion, version) {
-          if (errVersion) throw err;
-          if (semver.lt(version, '3.1.6')) {
-            test.skip();
-          }
-        });
-
         var docs = _range(0, 1000).map(function(i) {
           return {
             _id: 'needle_' + i,
@@ -122,6 +122,7 @@ describe('mongodb-collection-sample', function() {
     });
 
     context('when requesting 3% of all documents', function() {
+      before(skipIfSampleUnsopported);
       var opts = {
         size: 30
       };
@@ -167,6 +168,7 @@ describe('mongodb-collection-sample', function() {
       });
     });
     context('when using fields', function() {
+      before(skipIfSampleUnsopported);
       var opts = {
         size: 30,
         fields: {'is_even': 1, 'double': 1}
@@ -184,6 +186,7 @@ describe('mongodb-collection-sample', function() {
       });
     });
     context('when using query', function() {
+      before(skipIfSampleUnsopported);
       var opts = {
         size: 10,
         query: {is_even: 1}
