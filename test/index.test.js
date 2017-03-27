@@ -151,27 +151,48 @@ describe('mongodb-collection-sample', function() {
         }));
     });
 
-    it('should not promote numeric values if promoteValues is false', function(done) {
-      sample(db, 'haystack', {
-        size: 1,
-        chunkSize: 1234,
-        promoteValues: false
-      })
-        .pipe(es.through(function(doc) {
-          assert.equal(typeof doc.int, 'object');
-          assert.equal(doc.int._bsontype, 'Int32');
-          assert.equal(typeof doc.long, 'object');
-          assert.equal(doc.long._bsontype, 'Long');
-          assert.equal(typeof doc.double, 'object');
-          assert.equal(doc.double._bsontype, 'Double');
-          this.emit('data', doc);
-        }, function() {
-          this.emit('end');
-          done();
-        }));
+    context('when promoteValues is false', function() {
+      it('should not promote numeric values', function(done) {
+        sample(db, 'haystack', {
+          size: 1,
+          chunkSize: 1234,
+          promoteValues: false
+        })
+          .pipe(es.through(function(doc) {
+            assert.equal(typeof doc.int, 'object');
+            assert.equal(doc.int._bsontype, 'Int32');
+            assert.equal(typeof doc.long, 'object');
+            assert.equal(doc.long._bsontype, 'Long');
+            assert.equal(typeof doc.double, 'object');
+            assert.equal(doc.double._bsontype, 'Double');
+            this.emit('data', doc);
+          }, function() {
+            this.emit('end');
+            done();
+          }));
+      });
+      it('should not promote numeric values when asking for the full collection', function(done) {
+        sample(db, 'haystack', {
+          size: 999,  // this is more than #docs, which causes a find
+          chunkSize: 1234,
+          promoteValues: false
+        })
+          .pipe(es.through(function(doc) {
+            debug('doc', doc);
+            assert.equal(typeof doc.int, 'object');
+            assert.equal(doc.int._bsontype, 'Int32');
+            assert.equal(typeof doc.long, 'object');
+            assert.equal(doc.long._bsontype, 'Long');
+            assert.equal(typeof doc.double, 'object');
+            assert.equal(doc.double._bsontype, 'Double');
+            this.emit('data', doc);
+          }, function() {
+            this.emit('end');
+            done();
+          }));
+      });
     });
   });
-
 
   describe('Reservoir Sampler chunk sampling', function() {
     var db;
