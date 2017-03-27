@@ -11,6 +11,8 @@ var ReservoirSampler = require('../lib/reservoir-sampler');
 var NativeSampler = require('../lib/native-sampler');
 var runner = require('mongodb-runner');
 var bson = require('bson');
+var semver = require('semver');
+var getKernelVersion = require('get-mongodb-version');
 
 var debug = require('debug')('mongodb-collection-sample:test');
 
@@ -86,11 +88,18 @@ describe('mongodb-collection-sample', function() {
     var db;
 
     before(function(done) {
+      var test = this;
       mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
         if (err) {
           return done(err);
         }
         db = _db;
+        getKernelVersion({db: db}, function(errVersion, version) {
+          if (errVersion) throw err;
+          if (semver.lt(version, '3.1.6')) {
+            test.skip();
+          }
+        });
 
         var docs = _range(0, 1000).map(function(i) {
           return {
