@@ -93,10 +93,10 @@ db.collectionName.aggregate([
 ])
 ```
 
-However, if more documents are requested than are in the collection, executes
-a regular `find()` to fetch all documents instead. If the sample size is
-above 5% of the collection count, the algorithm falls back to the reservoir
-sampling, see below.
+However, if more documents are requested than are available, the `$sample` stage
+is omitted for performance optimization. If the sample size is above 5% of the
+result set count (but less than 100%), the algorithm falls back to the reservoir
+sampling, to avoid a blocking sort stage on the server.
 
 
 #### Reservoir Sampling
