@@ -37,6 +37,7 @@
   "devDependencies": {
     "backoff": "^2.4.1",
     "bson": "^1.0.4",
+    "chai": "^3.5.0",
     "eslint-config-mongodb-js": "^2.2.0",
     "lodash.range": "^3.0.1",
     "mocha": "^3.0.0",
