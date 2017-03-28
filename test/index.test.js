@@ -1,5 +1,7 @@
+/* eslint no-unused-expressions: 0 */
+
 var proxyquire = require('proxyquire');
-var assert = require('assert');
+var expect = require('chai').expect;
 var _range = require('lodash.range');
 var es = require('event-stream');
 var mongodb = require('mongodb');
@@ -9,6 +11,7 @@ var ReservoirSampler = require('../lib/reservoir-sampler');
 var NativeSampler = require('../lib/native-sampler');
 var runner = require('mongodb-runner');
 var bson = require('bson');
+var semver = require('semver');
 
 var debug = require('debug')('mongodb-collection-sample:test');
 
@@ -27,6 +30,14 @@ var runnerOpts = {
   port: 31017
 };
 
+var versionSupportsSample;
+
+var skipIfSampleUnsupported = function() {
+  if (!versionSupportsSample) {
+    this.skip();
+  }
+};
+
 before(function(done) {
   this.timeout(100000);
   debug('launching local replicaset.');
@@ -43,10 +54,11 @@ describe('mongodb-collection-sample', function() {
   before(function(done) {
     // output the current version for debug purpose
     mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, db) {
-      assert.ifError(err);
+      expect(err).to.not.exist;
       db.admin().serverInfo(function(err2, info) {
-        assert.ifError(err2);
+        expect(err2).to.not.exist;
         debug('running tests with MongoDB version %s.', info.version);
+        versionSupportsSample = semver.gte(info.version, '3.1.6');
         db.close();
         done();
       });
@@ -56,25 +68,139 @@ describe('mongodb-collection-sample', function() {
   describe('polyfill', function() {
     it('should use reservoir sampling if version is 3.1.5', function(done) {
       getSampler('3.1.5', function(err, src) {
-        assert.ifError(err);
-        assert(src instanceof ReservoirSampler);
+        expect(err).to.not.exist;
+        expect(src).to.be.an.instanceOf(ReservoirSampler);
         done();
       });
     });
 
     it('should use native sampling if version is 3.1.6', function(done) {
       getSampler('3.1.6', function(err, src) {
-        assert.ifError(err);
-        assert(src instanceof NativeSampler);
+        expect(err).to.not.exist;
+        expect(src).to.be.an.instanceOf(NativeSampler);
         done();
       });
     });
 
     it('should use native sampling if version is 3.1.7', function(done) {
       getSampler('3.1.7', function(err, src) {
-        assert.ifError(err);
-        assert(src instanceof NativeSampler);
+        expect(err).to.not.exist;
+        expect(src).to.be.an.instanceOf(NativeSampler);
         done();
+      });
+    });
+  });
+
+  describe('Native Sampler pipelines', function() {
+    this.timeout(30000);
+    var db;
+
+    before(function(done) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
+        if (err) {
+          return done(err);
+        }
+        db = _db;
+        var docs = _range(0, 1000).map(function(i) {
+          return {
+            _id: 'needle_' + i,
+            is_even: i % 2,
+            long: bson.Long.fromString('1234567890'),
+            double: 0.23456,
+            int: 1234
+          };
+        });
+        db.collection('haystack').insert(docs, done);
+      });
+    });
+
+    after(function(done) {
+      if (!db) {
+        return done();
+      }
+      db.dropCollection('haystack', done);
+    });
+
+    context('when requesting 3% of all documents', function() {
+      before(skipIfSampleUnsupported);
+      var opts = {
+        size: 30
+      };
+      it('has a $sample in the pipeline', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            expect(sampler.pipeline).to.have.lengthOf(1);
+            expect(sampler.pipeline[0]).to.have.all.keys('$sample');
+            expect(sampler.pipeline[0].$sample).to.be.deep.equal({size: 30});
+            done();
+          });
+      });
+    });
+    context('when requesting 30% of all documents', function() {
+      var opts = {
+        size: 300
+      };
+      it('falls back to reservoir sampling', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            expect(sampler.pipeline).to.not.exist;
+            done();
+          });
+      });
+    });
+    context('when requesting 300% of all documents', function() {
+      var opts = {
+        size: 3000
+      };
+      it('does not contain a $sample in the pipeline', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            expect(sampler.pipeline).to.be.an('array');
+            expect(sampler.pipeline).to.have.lengthOf(0);
+            done();
+          });
+      });
+    });
+    context('when using fields', function() {
+      before(skipIfSampleUnsupported);
+      var opts = {
+        size: 30,
+        fields: {'is_even': 1, 'double': 1}
+      };
+      it('has a $project stage at the end of the pipeline', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            var lastStage = sampler.pipeline[sampler.pipeline.length - 1];
+            expect(lastStage).to.have.all.keys('$project');
+            expect(lastStage.$project).to.be.deep.equal({is_even: 1, double: 1});
+            done();
+          });
+      });
+    });
+    context('when using query', function() {
+      before(skipIfSampleUnsupported);
+      var opts = {
+        size: 10,
+        query: {is_even: 1}
+      };
+      it('has a $match stage at the beginning of the pipeline', function(done) {
+        var sampler = new NativeSampler(db, 'haystack', opts);
+        sampler
+          .on('data', function() {})
+          .on('end', function() {
+            var firstStage = sampler.pipeline[0];
+            expect(firstStage).to.have.all.keys('$match');
+            expect(firstStage.$match).to.be.deep.equal({is_even: 1});
+            done();
+          });
       });
     });
   });
@@ -113,8 +239,8 @@ describe('mongodb-collection-sample', function() {
 
     it('should have the test.haystack collection with 150 docs', function(done) {
       db.collection('haystack').count(function(err, res) {
-        assert.ifError(err);
-        assert.equal(res, 150);
+        expect(err).to.not.exist;
+        expect(res).to.be.equal(150);
         done();
       });
     });
@@ -125,10 +251,10 @@ describe('mongodb-collection-sample', function() {
         fields: {'is_even': 1, 'double': 1}
       })
         .pipe(es.through(function(doc) {
-          assert.ok(doc.is_even !== undefined);
-          assert.ok(doc.double !== undefined);
-          assert.equal(doc.int, undefined);
-          assert.equal(doc.long, undefined);
+          expect(doc.is_even).to.exist;
+          expect(doc.double).to.exist;
+          expect(doc.int).to.be.undefined;
+          expect(doc.long).to.be.undefined;
         }, function() {
           this.emit('end');
           done();
@@ -141,9 +267,9 @@ describe('mongodb-collection-sample', function() {
         chunkSize: 1234
       })
         .pipe(es.through(function(doc) {
-          assert.equal(typeof doc.int, 'number');
-          assert.equal(typeof doc.long, 'number');
-          assert.equal(typeof doc.double, 'number');
+          expect(doc.int).to.be.a('number');
+          expect(doc.long).to.be.a('number');
+          expect(doc.double).to.be.a('number');
           this.emit('data', doc);
         }, function() {
           this.emit('end');
@@ -151,27 +277,47 @@ describe('mongodb-collection-sample', function() {
         }));
     });
 
-    it('should not promote numeric values if promoteValues is false', function(done) {
-      sample(db, 'haystack', {
-        size: 1,
-        chunkSize: 1234,
-        promoteValues: false
-      })
-        .pipe(es.through(function(doc) {
-          assert.equal(typeof doc.int, 'object');
-          assert.equal(doc.int._bsontype, 'Int32');
-          assert.equal(typeof doc.long, 'object');
-          assert.equal(doc.long._bsontype, 'Long');
-          assert.equal(typeof doc.double, 'object');
-          assert.equal(doc.double._bsontype, 'Double');
-          this.emit('data', doc);
-        }, function() {
-          this.emit('end');
-          done();
-        }));
+    context('when promoteValues is false', function() {
+      it('should not promote numeric values', function(done) {
+        sample(db, 'haystack', {
+          size: 1,
+          chunkSize: 1234,
+          promoteValues: false
+        })
+          .pipe(es.through(function(doc) {
+            expect(doc.int).to.be.an('object');
+            expect(doc.int._bsontype).to.be.equal('Int32');
+            expect(doc.long).to.be.an('object');
+            expect(doc.long._bsontype).to.be.equal('Long');
+            expect(doc.double).to.be.an('object');
+            expect(doc.double._bsontype).to.be.equal('Double');
+            this.emit('data', doc);
+          }, function() {
+            this.emit('end');
+            done();
+          }));
+      });
+      it('should not promote numeric values when asking for the full collection', function(done) {
+        sample(db, 'haystack', {
+          size: 999,  // this is more than #docs, which disables $sample
+          chunkSize: 1234,
+          promoteValues: false
+        })
+          .pipe(es.through(function(doc) {
+            expect(doc.int).to.be.an('object');
+            expect(doc.int._bsontype).to.be.equal('Int32');
+            expect(doc.long).to.be.an('object');
+            expect(doc.long._bsontype).to.be.equal('Long');
+            expect(doc.double).to.be.an('object');
+            expect(doc.double._bsontype).to.be.equal('Double');
+            this.emit('data', doc);
+          }, function() {
+            this.emit('end');
+            done();
+          }));
+      });
     });
   });
-
 
   describe('Reservoir Sampler chunk sampling', function() {
     var db;
@@ -203,8 +349,8 @@ describe('mongodb-collection-sample', function() {
 
     it('should use `_id: -1` as the default sort', function(done) {
       getSampler('3.1.5', function(err, src) {
-        assert.ifError(err);
-        assert.deepEqual(src.sort, {
+        expect(err).to.not.exist;
+        expect(src.sort).to.be.deep.equal({
           _id: -1
         });
         done();
@@ -213,8 +359,8 @@ describe('mongodb-collection-sample', function() {
 
     it('should have the test.haystack collection with 15000 docs', function(done) {
       db.collection('haystack').count(function(err, res) {
-        assert.ifError(err);
-        assert.equal(res, 15000);
+        expect(err).to.not.exist;
+        expect(res).to.be.equal(15000);
         done();
       });
     });
@@ -230,7 +376,7 @@ describe('mongodb-collection-sample', function() {
           this.emit('data', doc);
         }, function() {
           this.emit('end');
-          assert.equal(seen, 10000);
+          expect(seen).to.be.equal(10000);
           done();
         }));
     });
@@ -271,7 +417,7 @@ describe('mongodb-collection-sample', function() {
           this.emit('data', doc);
         }, function() {
           this.emit('end');
-          assert.equal(seen, 5);
+          expect(seen).to.be.equal(5);
           done();
         }));
     });
@@ -290,9 +436,9 @@ describe('mongodb-collection-sample', function() {
           this.emit('data', doc);
         }, function() {
           this.emit('end');
-          assert.equal(docs.filter(function(d) {
+          expect(docs.filter(function(d) {
             return d.is_even === 1;
-          }).length, options.size);
+          }).length).to.be.equal(options.size);
           done();
         }));
     });
@@ -305,7 +451,7 @@ describe('mongodb-collection-sample', function() {
           this.emit('data', doc);
         }, function() {
           this.emit('end');
-          assert.equal(seen, 5);
+          expect(seen).to.be.equal(5);
           done();
         }));
     });
@@ -322,7 +468,7 @@ describe('mongodb-collection-sample', function() {
           this.emit('data', doc);
         }, function() {
           this.emit('end');
-          assert.equal(seen, 1000);
+          expect(seen).to.be.equal(1000);
           done();
         }));
     });
@@ -356,8 +502,8 @@ describe('mongodb-collection-sample', function() {
             }
             dbSec = _dbSec;
             dbSec.collection('haystack', options).count(function(errCount, res) {
-              assert.ifError(errCount);
-              assert.equal(res, 100);
+              expect(errCount).to.not.exist;
+              expect(res).to.be.equal(100);
               done();
             });
           });
@@ -392,7 +538,7 @@ describe('mongodb-collection-sample', function() {
         count++;
       });
       stream.on('end', function() {
-        assert.equal(count, opts.size);
+        expect(count).to.be.equal(opts.size);
         done();
       });
     });
