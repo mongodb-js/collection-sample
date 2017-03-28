@@ -32,7 +32,7 @@ var runnerOpts = {
 
 var versionSupportsSample;
 
-var skipIfSampleUnsopported = function() {
+var skipIfSampleUnsupported = function() {
   if (!versionSupportsSample) {
     this.skip();
   }
@@ -122,7 +122,7 @@ describe('mongodb-collection-sample', function() {
     });
 
     context('when requesting 3% of all documents', function() {
-      before(skipIfSampleUnsopported);
+      before(skipIfSampleUnsupported);
       var opts = {
         size: 30
       };
@@ -168,7 +168,7 @@ describe('mongodb-collection-sample', function() {
       });
     });
     context('when using fields', function() {
-      before(skipIfSampleUnsopported);
+      before(skipIfSampleUnsupported);
       var opts = {
         size: 30,
         fields: {'is_even': 1, 'double': 1}
@@ -186,7 +186,7 @@ describe('mongodb-collection-sample', function() {
       });
     });
     context('when using query', function() {
-      before(skipIfSampleUnsopported);
+      before(skipIfSampleUnsupported);
       var opts = {
         size: 10,
         query: {is_even: 1}
