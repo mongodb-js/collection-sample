@@ -29,7 +29,7 @@
     "event-stream": "^3.3.2",
     "get-mongodb-version": "0.0.1",
     "lodash.chunk": "^4.0.0",
-    "lodash.defaults": "^4.0.1",
+    "lodash.defaults": "^4.2.0",
     "mongodb-read-preference": "^1.0.6",
     "reservoir": "^0.1.2",
     "semver": "^5.0.3"
