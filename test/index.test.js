@@ -1,29 +1,16 @@
 /* eslint no-unused-expressions: 0 */
-
-var proxyquire = require('proxyquire');
 var expect = require('chai').expect;
 var _range = require('lodash.range');
 var es = require('event-stream');
 var mongodb = require('mongodb');
 var ReadPreference = require('mongodb-read-preference');
 var sample = require('../');
-var ReservoirSampler = require('../lib/reservoir-sampler');
 var NativeSampler = require('../lib/native-sampler');
 var runner = require('mongodb-runner');
 var bson = require('bson');
 var semver = require('semver');
 
 var debug = require('debug')('mongodb-collection-sample:test');
-
-var getSampler = function(version, fn) {
-  proxyquire('../lib', {
-    'get-mongodb-version': function(opts, cb) {
-      process.nextTick(function() {
-        cb(null, version);
-      });
-    }
-  }).getSampler({}, 'pets', {}, fn);
-};
 
 var runnerOpts = {
   topology: 'replicaset',
@@ -53,39 +40,13 @@ after(function(done) {
 describe('mongodb-collection-sample', function() {
   before(function(done) {
     // output the current version for debug purpose
-    mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, db) {
+    mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
       expect(err).to.not.exist;
-      db.admin().serverInfo(function(err2, info) {
+      client.db('test').admin().serverInfo(function(err2, info) {
         expect(err2).to.not.exist;
         debug('running tests with MongoDB version %s.', info.version);
         versionSupportsSample = semver.gte(info.version, '3.1.6');
-        db.close();
-        done();
-      });
-    });
-  });
-
-  describe('polyfill', function() {
-    it('should use reservoir sampling if version is 3.1.5', function(done) {
-      getSampler('3.1.5', function(err, src) {
-        expect(err).to.not.exist;
-        expect(src).to.be.an.instanceOf(ReservoirSampler);
-        done();
-      });
-    });
-
-    it('should use native sampling if version is 3.1.6', function(done) {
-      getSampler('3.1.6', function(err, src) {
-        expect(err).to.not.exist;
-        expect(src).to.be.an.instanceOf(NativeSampler);
-        done();
-      });
-    });
-
-    it('should use native sampling if version is 3.1.7', function(done) {
-      getSampler('3.1.7', function(err, src) {
-        expect(err).to.not.exist;
-        expect(src).to.be.an.instanceOf(NativeSampler);
+        client.close();
         done();
       });
     });
@@ -96,11 +57,11 @@ describe('mongodb-collection-sample', function() {
     var db;
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
         if (err) {
           return done(err);
         }
-        db = _db;
+        db = client.db('test');
         var docs = _range(0, 1000).map(function(i) {
           return {
             _id: 'needle_' + i,
@@ -211,11 +172,11 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
         if (err) {
           return done(err);
         }
-        db = _db;
+        db = client.db('test');
 
         var docs = _range(0, 150).map(function(i) {
           return {
@@ -324,11 +285,11 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
         if (err) {
           return done(err);
         }
-        db = _db;
+        db = client.db('test');
 
         var docs = _range(0, 15000).map(function(i) {
           return {
@@ -345,16 +306,6 @@ describe('mongodb-collection-sample', function() {
         return done();
       }
       db.dropCollection('haystack', done);
-    });
-
-    it('should use `_id: -1` as the default sort', function(done) {
-      getSampler('3.1.5', function(err, src) {
-        expect(err).to.not.exist;
-        expect(src.sort).to.be.deep.equal({
-          _id: -1
-        });
-        done();
-      });
     });
 
     it('should have the test.haystack collection with 15000 docs', function(done) {
@@ -386,11 +337,11 @@ describe('mongodb-collection-sample', function() {
     var db;
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _db) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
         if (err) {
           return done(err);
         }
-        db = _db;
+        db = client.db('test');
 
         var docs = _range(0, 1000).map(function(i) {
           return {
@@ -479,16 +430,19 @@ describe('mongodb-collection-sample', function() {
 
     var dbPrim;
     var dbSec;
+    var clientPrim;
+    var clientSec;
     var options = {
       readPreference: ReadPreference.secondaryPreferred
     };
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, _dbPrim) {
+      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
         if (err) {
           return done(err);
         }
-        dbPrim = _dbPrim;
+        clientPrim = client;
+        dbPrim = client.db('test');
         var docs = _range(0, 100).map(function(i) {
           return {
             _id: 'needle_' + i,
@@ -496,11 +450,12 @@ describe('mongodb-collection-sample', function() {
           };
         });
         dbPrim.collection('haystack').insert(docs, {w: 3}, function() {
-          mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(errInsert, _dbSec) {
+          mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(errInsert, _client) {
             if (errInsert) {
               return done(errInsert);
             }
-            dbSec = _dbSec;
+            clientSec = _client;
+            dbSec = _client.db('test');
             dbSec.collection('haystack', options).count(function(errCount, res) {
               expect(errCount).to.not.exist;
               expect(res).to.be.equal(100);
@@ -516,8 +471,8 @@ describe('mongodb-collection-sample', function() {
         return done();
       }
       dbPrim.dropCollection('haystack', function() {
-        dbPrim.close();
-        dbSec.close();
+        clientPrim.close();
+        clientSec.close();
         done();
       });
     });
