@@ -4,7 +4,7 @@ var es = require('event-stream');
 var mongodb = require('mongodb');
 var sample = require('../');
 var toNS = require('mongodb-ns');
-var EJSON = require('mongodb-extended-json');
+var EJSON = require('mongodb-extjson');
 var pkg = require('../package.json');
 
 // var debug = require('debug')('mongodb-collection-sample:bin');
