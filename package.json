@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "event-stream": "^3.3.2",
+    "event-stream": "^4.0.1",
     "lodash.chunk": "^4.0.0",
     "lodash.defaults": "^4.0.1",
     "reservoir": "^0.1.2",
