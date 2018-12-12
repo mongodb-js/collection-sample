@@ -1,13 +1,10 @@
 sudo: required
 language: node_js
 node_js:
-  - 8.2.1
+  - 10.2.1
 script: npm run-script ci
 cache:
   directories:
     - node_modules
 env:
-  - DEBUG=mon* MONGODB_VERSION=2.6.x
-  - DEBUG=mon* MONGODB_VERSION=3.0.x
-  - DEBUG=mon* MONGODB_VERSION=3.2.x
-  - DEBUG=mon* MONGODB_VERSION=3.4.x
+  - DEBUG=mon* MONGODB_VERSION=4.0.x

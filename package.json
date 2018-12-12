@@ -4,7 +4,8 @@
   "version": "4.3.1",
   "scripts": {
     "check": "mongodb-js-precommit",
-    "pretest": "mongodb-runner install",
+    "pretest": "mongodb-runner start --port=27018",
+    "posttest": "mongodb-runner stop --port=27018",
     "test": "mocha",
     "ci": "npm run check && npm test",
     "fmt": "mongodb-js-fmt test/*.js bin/*.js index.js"

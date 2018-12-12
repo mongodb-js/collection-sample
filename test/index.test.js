@@ -6,16 +6,10 @@ var mongodb = require('mongodb');
 var ReadPreference = require('mongodb-read-preference');
 var sample = require('../');
 var NativeSampler = require('../lib/native-sampler');
-var runner = require('mongodb-runner');
 var bson = require('bson');
 var semver = require('semver');
 
 var debug = require('debug')('mongodb-collection-sample:test');
-
-var runnerOpts = {
-  topology: 'replicaset',
-  port: 31017
-};
 
 var versionSupportsSample;
 
@@ -25,22 +19,10 @@ var skipIfSampleUnsupported = function() {
   }
 };
 
-before(function(done) {
-  this.timeout(100000);
-  debug('launching local replicaset.');
-  runner(runnerOpts, done);
-});
-
-after(function(done) {
-  this.timeout(20000);
-  debug('stopping replicaset.');
-  runner.stop(runnerOpts, done);
-});
-
 describe('mongodb-collection-sample', function() {
   before(function(done) {
     // output the current version for debug purpose
-    mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
+    mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
       expect(err).to.not.exist;
       client.db('test').admin().serverInfo(function(err2, info) {
         expect(err2).to.not.exist;
@@ -57,7 +39,7 @@ describe('mongodb-collection-sample', function() {
     var db;
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
+      mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
         if (err) {
           return done(err);
         }
@@ -71,7 +53,7 @@ describe('mongodb-collection-sample', function() {
             int: 1234
           };
         });
-        db.collection('haystack').insert(docs, done);
+        db.collection('haystack').insertMany(docs, done);
       });
     });
 
@@ -172,7 +154,7 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
+      mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
         if (err) {
           return done(err);
         }
@@ -187,7 +169,7 @@ describe('mongodb-collection-sample', function() {
             int: 1234
           };
         });
-        db.collection('haystack').insert(docs, done);
+        db.collection('haystack').insertMany(docs, done);
       });
     });
 
@@ -199,7 +181,7 @@ describe('mongodb-collection-sample', function() {
     });
 
     it('should have the test.haystack collection with 150 docs', function(done) {
-      db.collection('haystack').count(function(err, res) {
+      db.collection('haystack').countDocuments(function(err, res) {
         expect(err).to.not.exist;
         expect(res).to.be.equal(150);
         done();
@@ -285,7 +267,7 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
+      mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
         if (err) {
           return done(err);
         }
@@ -297,7 +279,7 @@ describe('mongodb-collection-sample', function() {
             is_even: i % 2
           };
         });
-        db.collection('haystack').insert(docs, done);
+        db.collection('haystack').insertMany(docs, done);
       });
     });
 
@@ -309,7 +291,7 @@ describe('mongodb-collection-sample', function() {
     });
 
     it('should have the test.haystack collection with 15000 docs', function(done) {
-      db.collection('haystack').count(function(err, res) {
+      db.collection('haystack').countDocuments(function(err, res) {
         expect(err).to.not.exist;
         expect(res).to.be.equal(15000);
         done();
@@ -337,7 +319,7 @@ describe('mongodb-collection-sample', function() {
     var db;
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
+      mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
         if (err) {
           return done(err);
         }
@@ -349,7 +331,7 @@ describe('mongodb-collection-sample', function() {
             is_even: i % 2
           };
         });
-        db.collection('haystack').insert(docs, done);
+        db.collection('haystack').insertMany(docs, done);
       });
     });
 
@@ -433,11 +415,11 @@ describe('mongodb-collection-sample', function() {
     var clientPrim;
     var clientSec;
     var options = {
-      readPreference: ReadPreference.secondaryPreferred
+      readPreference: ReadPreference.primaryPreferred
     };
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(err, client) {
+      mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
         if (err) {
           return done(err);
         }
@@ -449,16 +431,15 @@ describe('mongodb-collection-sample', function() {
             is_even: i % 2
           };
         });
-        dbPrim.collection('haystack').insert(docs, {w: 3}, function() {
-          mongodb.MongoClient.connect('mongodb://localhost:31017/test', function(errInsert, _client) {
+        dbPrim.collection('haystack').insertMany(docs, function() {
+          mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(errInsert, _client) {
             if (errInsert) {
               return done(errInsert);
             }
             clientSec = _client;
             dbSec = _client.db('test');
-            dbSec.collection('haystack', options).count(function(errCount, res) {
+            dbSec.collection('haystack', options).countDocuments(function(errCount) {
               expect(errCount).to.not.exist;
-              expect(res).to.be.equal(100);
               done();
             });
           });
