@@ -73,6 +73,7 @@ Supported options that can be passed to `sample(db, coll, options)` are
 - `query`: the filter to be used, default is `{}`
 - `size`: the number of documents to sample, default is `5`
 - `fields`: the fields you want returned (projection object), default is `null`
+- `raw`: boolean to return documents as raw BSON buffers, default is `false`
 - `sort`: the sort field and direction, default is `{_id: -1}`
 - `maxTimeMS`: the maxTimeMS value after which the operation is terminated, default is `undefined`
 - `promoteValues`: boolean whether certain BSON values should be cast to native Javascript values or not. Default is `true`
@@ -97,6 +98,8 @@ However, if more documents are requested than are available, the `$sample` stage
 is omitted for performance optimization. If the sample size is above 5% of the
 result set count (but less than 100%), the algorithm falls back to the reservoir
 sampling, to avoid a blocking sort stage on the server.
+
+If the `raw` option is used, native sampling will always be used even if the sample size is above 5%.
 
 
 #### Reservoir Sampling
