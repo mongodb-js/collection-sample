@@ -180,7 +180,7 @@ describe('mongodb-collection-sample', function() {
     });
 
     it('should return raw bson buffer when requested', function(done) {
-      sample(db, 'haystack', { size: 10, raw: true })
+      sample(db, 'haystack', { size: 2, raw: true })
         .pipe(es.through(function(doc) {
           expect(Buffer.isBuffer(doc)).to.be.true;
         }, function() {
@@ -199,7 +199,7 @@ describe('mongodb-collection-sample', function() {
       var db;
 
       before(function(done) {
-        this.timeout(300000);
+        this.timeout(3000000);
         mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
           if (err) {
             return done(err);
@@ -227,7 +227,7 @@ describe('mongodb-collection-sample', function() {
       });
 
       it('buffer does not overflow', function(done) {
-        sample(db, 'haystack', { size: 1000000, raw: true })
+        sample(db, 'haystack', { size: 100000, raw: true })
           .pipe(es.through(function(doc) {
             expect(Buffer.isBuffer(doc)).to.be.true;
           }, function() {

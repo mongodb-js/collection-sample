@@ -99,8 +99,6 @@ is omitted for performance optimization. If the sample size is above 5% of the
 result set count (but less than 100%), the algorithm falls back to the reservoir
 sampling, to avoid a blocking sort stage on the server.
 
-If the `raw` option is used, native sampling will always be used even if the sample size is above 5%.
-
 
 #### Reservoir Sampling
 
