@@ -193,48 +193,50 @@ describe('mongodb-collection-sample', function() {
   // This test creates 2mil documents and samples 1mil of those to make sure
   // buffer doesn't overflow. Only creating 2mil documents, since any more
   // causes v8 to run out memory in heap.
-  // FYI: takes a long time to run.
-  describe('raw buffer over a large set of documents', function() {
-    var db;
+  // FYI: takes a while, so will only run with `test=BIG_SAMPLE npm run test`
+  if (process.env.test === 'BIG_SAMPLE') {
+    describe('raw buffer over a large set of documents', function() {
+      var db;
 
-    before(function(done) {
-      this.timeout(300000);
-      mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
-        if (err) {
-          return done(err);
-        }
-        db = client.db('test');
+      before(function(done) {
+        this.timeout(300000);
+        mongodb.MongoClient.connect('mongodb://localhost:27018/test', { useNewUrlParser: true }, function(err, client) {
+          if (err) {
+            return done(err);
+          }
+          db = client.db('test');
 
-        var docs = _range(2000000).map(function(i) {
-          return {
-            _id: 'needle_' + i,
-            is_even: i % 2,
-            long: bson.Long.fromString('1234567890'),
-            double: 0.23456,
-            int: 1234
-          };
+          var docs = _range(2000000).map(function(i) {
+            return {
+              _id: 'needle_' + i,
+              is_even: i % 2,
+              long: bson.Long.fromString('1234567890'),
+              double: 0.23456,
+              int: 1234
+            };
+          });
+          db.collection('haystack').insertMany(docs, done);
         });
-        db.collection('haystack').insertMany(docs, done);
+      });
+
+      after(function(done) {
+        if (!db) {
+          return done();
+        }
+        db.dropCollection('haystack', done);
+      });
+
+      it('buffer does not overflow', function(done) {
+        sample(db, 'haystack', { size: 1000000, raw: true })
+          .pipe(es.through(function(doc) {
+            expect(Buffer.isBuffer(doc)).to.be.true;
+          }, function() {
+            this.emit('end');
+            done();
+          }));
       });
     });
-
-    after(function(done) {
-      if (!db) {
-        return done();
-      }
-      db.dropCollection('haystack', done);
-    });
-
-    it('buffer does not overflow', function(done) {
-      sample(db, 'haystack', { size: 1000000, raw: true })
-        .pipe(es.through(function(doc) {
-          expect(Buffer.isBuffer(doc)).to.be.true;
-        }, function() {
-          this.emit('end');
-          done();
-        }));
-    });
-  });
+  }
 
   describe('promoteValues', function() {
     var db;
