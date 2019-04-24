@@ -6,7 +6,7 @@
     "check": "mongodb-js-precommit",
     "pretest": "mongodb-runner start --port=27018",
     "posttest": "mongodb-runner stop --port=27018",
-    "test": "mocha",
+    "test": "mocha --exit",
     "ci": "npm run check && npm test",
     "fmt": "mongodb-js-fmt test/*.js bin/*.js index.js"
   },
