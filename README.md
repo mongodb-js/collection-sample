@@ -73,6 +73,7 @@ Supported options that can be passed to `sample(db, coll, options)` are
 - `query`: the filter to be used, default is `{}`
 - `size`: the number of documents to sample, default is `5`
 - `fields`: the fields you want returned (projection object), default is `null`
+- `raw`: boolean to return documents as raw BSON buffers, default is `false`
 - `sort`: the sort field and direction, default is `{_id: -1}`
 - `maxTimeMS`: the maxTimeMS value after which the operation is terminated, default is `undefined`
 - `promoteValues`: boolean whether certain BSON values should be cast to native Javascript values or not. Default is `true`
