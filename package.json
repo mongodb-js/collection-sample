@@ -1,7 +1,7 @@
 {
   "name": "mongodb-collection-sample",
   "description": "Sample documents from MongoDB collections.",
-  "version": "4.3.2",
+  "version": "4.4.0",
   "scripts": {
     "check": "mongodb-js-precommit",
     "pretest": "mongodb-runner start --port=27018",
