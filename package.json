@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "debug": "^2.2.0",
+    "bson": "^4.0.2",
     "event-stream": "^4.0.1",
     "lodash.chunk": "^4.0.0",
     "lodash.defaults": "^4.0.1",
@@ -35,7 +36,6 @@
   },
   "devDependencies": {
     "backoff": "^2.4.1",
-    "bson": "^4.0.2",
     "chai": "^3.5.0",
     "eslint-config-mongodb-js": "^2.2.0",
     "lodash.range": "^3.0.1",
