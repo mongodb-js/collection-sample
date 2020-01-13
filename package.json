@@ -6,13 +6,8 @@
     "check": "mongodb-js-precommit",
     "pretest": "mongodb-runner start --port=27018",
     "posttest": "mongodb-runner stop --port=27018",
-    "test": "mocha --exit",
-    "ci": "npm run check && npm test",
-    "fmt": "mongodb-js-fmt test/*.js bin/*.js index.js"
+    "test": "mocha --exit"
   },
-  "precommit": [
-    "check"
-  ],
   "homepage": "https://github.com/mongodb-js/mongodb-collection-sample",
   "repository": {
     "type": "git",
@@ -26,32 +21,27 @@
     "mongodb-collection-sample": "bin/mongodb-collection-sample.js"
   },
   "dependencies": {
-    "debug": "^2.2.0",
-    "bson": "^4.0.2",
+    "debug": "^4.1.1",
+    "bson": "^4.0.3",
     "event-stream": "^4.0.1",
-    "lodash.chunk": "^4.0.0",
-    "lodash.defaults": "^4.0.1",
+    "lodash.chunk": "^4.2.0",
+    "lodash.defaults": "^4.2.0",
     "reservoir": "^0.1.2",
-    "semver": "^5.0.3"
+    "semver": "^7.1.1"
   },
   "devDependencies": {
-    "backoff": "^2.4.1",
-    "chai": "^3.5.0",
-    "eslint-config-mongodb-js": "^2.2.0",
-    "lodash.range": "^3.0.1",
-    "mocha": "^5.2.0",
-    "mongodb": "^3.2.1",
-    "mongodb-js-fmt": "0.0.3",
-    "mongodb-js-precommit": "^0.2.9",
-    "mongodb-read-preference": "^1.0.6",
-    "mongodb-runner": "^4.6.0",
-    "pre-commit": "^1.1.2",
-    "proxyquire": "^1.7.9"
+    "backoff": "^2.5.0",
+    "chai": "^4.2.0",
+    "eslint-config-mongodb-js": "^5.0.3",
+    "lodash.range": "^3.2.0",
+    "mocha": "^7.0.0",
+    "mongodb": "^3.4.1",
+    "mongodb-js-precommit": "^2.0.0",
+    "mongodb-runner": "^4.8.0",
+    "proxyquire": "^2.1.3"
   },
   "optionalDependencies": {
-    "event-stream": "^4.0.1",
-    "mongodb-extjson": "^2.1.0",
-    "mongodb-ns": "^2.0.0",
-    "yargs": "^4.7.1"
+    "mongodb-ns": "^2.2.0",
+    "yargs": "^15.1.0"
   }
 }
