@@ -4,7 +4,7 @@ var es = require('event-stream');
 var mongodb = require('mongodb');
 var sample = require('../');
 var toNS = require('mongodb-ns');
-var EJSON = require('mongodb-extjson');
+var EJSON = require('bson').EJSON;
 var pkg = require('../package.json');
 
 // var debug = require('debug')('mongodb-collection-sample:bin');
@@ -41,8 +41,7 @@ var argv = require('yargs')
   .describe('version', 'Show version.')
   .alias('h', 'help')
   .describe('h', 'Show this screen.')
-  .help('h')
-  .argv;
+  .help('h').argv;
 
 if (argv.debug) {
   process.env.DEBUG = '*';
@@ -78,17 +77,21 @@ mongodb.connect(uri, function(err, conn) {
   }
 
   sample(db, ns.collection, options)
-    .pipe(es.map(function(data, cb) {
-      if (data && argv.output) {
-        console.log(EJSON.stringify(data, null, 2));
-      }
-      cb(null, data);
-    }))
-    .pipe(es.wait(function(sampleErr) {
-      if (sampleErr) {
-        console.error('Error sampling data:', sampleErr);
-        process.exit(1);
-      }
-      process.exit(0);
-    }));
+    .pipe(
+      es.map(function(data, cb) {
+        if (data && argv.output) {
+          console.log(EJSON.stringify(data, null, 2));
+        }
+        cb(null, data);
+      })
+    )
+    .pipe(
+      es.wait(function(sampleErr) {
+        if (sampleErr) {
+          console.error('Error sampling data:', sampleErr);
+          process.exit(1);
+        }
+        process.exit(0);
+      })
+    );
 });
