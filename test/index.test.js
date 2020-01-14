@@ -297,7 +297,6 @@ describe('mongodb-collection-sample', function() {
         return done();
       }
       db.dropCollection('haystack', function() {
-        db.close();
         done();
       });
     });
