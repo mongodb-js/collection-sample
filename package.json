@@ -46,7 +46,7 @@
     "mongodb-read-preference": "^1.0.6",
     "mongodb-runner": "^4.6.0",
     "pre-commit": "^1.1.2",
-    "proxyquire": "^1.7.9"
+    "proxyquire": "^2.1.3"
   },
   "optionalDependencies": {
     "event-stream": "^4.0.1",
