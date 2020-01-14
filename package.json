@@ -50,7 +50,7 @@
   },
   "optionalDependencies": {
     "event-stream": "^4.0.1",
-    "mongodb-extjson": "^2.1.0",
+    "mongodb-extjson": "^3.0.3",
     "mongodb-ns": "^2.0.0",
     "yargs": "^4.7.1"
   }
