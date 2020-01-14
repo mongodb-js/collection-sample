@@ -166,27 +166,26 @@ describe('mongodb-collection-sample', function() {
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect(
-        'mongodb://localhost:27018/test',
-        { useNewUrlParser: true },
-        function(err, client) {
-          if (err) {
-            return done(err);
-          }
-          db = client.db('test');
-
-          var docs = _range(0, 150).map(function(i) {
-            return {
-              _id: 'needle_' + i,
-              is_even: i % 2,
-              long: bson.Long.fromString('1234567890'),
-              double: 0.23456,
-              int: 1234
-            };
-          });
-          db.collection('haystack').insertMany(docs, done);
+      mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+        err,
+        client
+      ) {
+        if (err) {
+          return done(err);
         }
-      );
+        db = client.db('test');
+
+        var docs = _range(0, 150).map(function(i) {
+          return {
+            _id: 'needle_' + i,
+            is_even: i % 2,
+            long: bson.Long.fromString('1234567890'),
+            double: 0.23456,
+            int: 1234
+          };
+        });
+        db.collection('haystack').insertMany(docs, done);
+      });
     });
 
     after(function(done) {
@@ -221,27 +220,26 @@ describe('mongodb-collection-sample', function() {
 
       before(function(done) {
         this.timeout(3000000);
-        mongodb.MongoClient.connect(
-          'mongodb://localhost:27018/test',
-          { useNewUrlParser: true },
-          function(err, client) {
-            if (err) {
-              return done(err);
-            }
-            db = client.db('test');
-
-            var docs = _range(2000000).map(function(i) {
-              return {
-                _id: 'needle_' + i,
-                is_even: i % 2,
-                long: bson.Long.fromString('1234567890'),
-                double: 0.23456,
-                int: 1234
-              };
-            });
-            db.collection('haystack').insertMany(docs, done);
+        mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+          err,
+          client
+        ) {
+          if (err) {
+            return done(err);
           }
-        );
+          db = client.db('test');
+
+          var docs = _range(2000000).map(function(i) {
+            return {
+              _id: 'needle_' + i,
+              is_even: i % 2,
+              long: bson.Long.fromString('1234567890'),
+              double: 0.23456,
+              int: 1234
+            };
+          });
+          db.collection('haystack').insertMany(docs, done);
+        });
       });
 
       after(function(done) {
@@ -431,7 +429,6 @@ describe('mongodb-collection-sample', function() {
         return done();
       }
       db.dropCollection('haystack', function() {
-        db.close();
         done();
       });
     });
@@ -493,7 +490,6 @@ describe('mongodb-collection-sample', function() {
         return done();
       }
       db.dropCollection('haystack', function() {
-        db.close();
         done();
       });
     });
