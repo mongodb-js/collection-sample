@@ -52,6 +52,6 @@
     "event-stream": "^4.0.1",
     "mongodb-extjson": "^2.1.0",
     "mongodb-ns": "^2.0.0",
-    "yargs": "^4.7.1"
+    "yargs": "^15.1.0"
   }
 }
