@@ -21,13 +21,13 @@
     "mongodb-collection-sample": "bin/mongodb-collection-sample.js"
   },
   "dependencies": {
-    "debug": "^4.1.1",
     "bson": "^4.0.3",
+    "debug": "^4.1.1",
     "event-stream": "^4.0.1",
     "lodash.chunk": "^4.2.0",
     "lodash.defaults": "^4.2.0",
     "reservoir": "^0.1.2",
-    "semver": "^7.1.1"
+    "semver": "^5.7.1"
   },
   "devDependencies": {
     "backoff": "^2.5.0",
