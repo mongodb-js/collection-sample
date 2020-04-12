@@ -27,7 +27,7 @@
     "lodash.chunk": "^4.2.0",
     "lodash.defaults": "^4.2.0",
     "reservoir": "^0.1.2",
-    "semver": "^5.7.1"
+    "semver": "^7.2.2"
   },
   "devDependencies": {
     "backoff": "^2.5.0",
