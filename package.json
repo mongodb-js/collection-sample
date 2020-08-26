@@ -34,7 +34,7 @@
     "chai": "^4.2.0",
     "eslint-config-mongodb-js": "^5.0.3",
     "lodash.range": "^3.2.0",
-    "mocha": "^7.0.0",
+    "mocha": "^8.1.2",
     "mongodb": "^3.4.1",
     "mongodb-js-precommit": "^2.0.0",
     "mongodb-runner": "^4.8.0",
