@@ -1,19 +1,18 @@
 /* eslint no-unused-expressions: 0 */
-var expect = require('chai').expect;
-var _range = require('lodash.range');
-var es = require('event-stream');
-var mongodb = require('mongodb');
-var ReadPreference = mongodb.ReadPreference;
-var sample = require('../');
-var NativeSampler = require('../lib/native-sampler');
-var bson = require('bson');
-var semver = require('semver');
+const expect = require('chai').expect;
+const _range = require('lodash.range');
+const es = require('event-stream');
+const { MongoClient, ReadPreference } = require('mongodb');
+const sample = require('../');
+const NativeSampler = require('../lib/native-sampler');
+const bson = require('bson');
+const semver = require('semver');
 
-var debug = require('debug')('mongodb-collection-sample:test');
+const debug = require('debug')('mongodb-collection-sample:test');
 
-var versionSupportsSample;
+let versionSupportsSample;
 
-var skipIfSampleUnsupported = function() {
+const skipIfSampleUnsupported = function() {
   if (!versionSupportsSample) {
     this.skip();
   }
@@ -21,13 +20,15 @@ var skipIfSampleUnsupported = function() {
 
 describe('mongodb-collection-sample', function() {
   before(function(done) {
-    // output the current version for debug purpose
-    mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+    const client = new MongoClient('mongodb://localhost:27018/test');
+
+    // Output the current version for debug purpose.
+    client.connect(function(
       err,
-      client
+      connectedClient
     ) {
       expect(err).to.not.exist;
-      client
+      connectedClient
         .db('test')
         .admin()
         .serverInfo(function(err2, info) {
@@ -42,29 +43,30 @@ describe('mongodb-collection-sample', function() {
 
   describe('Native Sampler pipelines', function() {
     this.timeout(30000);
-    var db;
+    let db;
 
     before(function(done) {
-      mongodb.MongoClient.connect(
-        'mongodb://localhost:27018/test',
-        { useNewUrlParser: true },
-        function(err, client) {
-          if (err) {
-            return done(err);
-          }
-          db = client.db('test');
-          var docs = _range(0, 1000).map(function(i) {
-            return {
-              _id: 'needle_' + i,
-              is_even: i % 2,
-              long: bson.Long.fromString('1234567890'),
-              double: 0.23456,
-              int: 1234
-            };
-          });
-          db.collection('haystack').insertMany(docs, done);
+      const client = new MongoClient('mongodb://localhost:27018/test');
+
+      client.connect(function(
+        err,
+        connectedClient
+      ) {
+        if (err) {
+          return done(err);
         }
-      );
+        db = connectedClient.db('test');
+        const docs = _range(0, 1000).map(function(i) {
+          return {
+            _id: 'needle_' + i,
+            is_even: i % 2,
+            long: bson.Long.fromString('1234567890'),
+            double: 0.23456,
+            int: 1234
+          };
+        });
+        db.collection('haystack').insertMany(docs, done);
+      } );
     });
 
     after(function(done) {
@@ -76,11 +78,11 @@ describe('mongodb-collection-sample', function() {
 
     context('when requesting 3% of all documents', function() {
       before(skipIfSampleUnsupported);
-      var opts = {
+      const opts = {
         size: 30
       };
       it('has a $sample in the pipeline', function(done) {
-        var sampler = new NativeSampler(db, 'haystack', opts);
+        const sampler = new NativeSampler(db, 'haystack', opts);
         sampler
           .on('data', function() {})
           .on('end', function() {
@@ -92,11 +94,11 @@ describe('mongodb-collection-sample', function() {
       });
     });
     context('when requesting 30% of all documents', function() {
-      var opts = {
+      const opts = {
         size: 300
       };
       it('falls back to reservoir sampling', function(done) {
-        var sampler = new NativeSampler(db, 'haystack', opts);
+        const sampler = new NativeSampler(db, 'haystack', opts);
         sampler
           .on('data', function() {})
           .on('end', function() {
@@ -106,11 +108,11 @@ describe('mongodb-collection-sample', function() {
       });
     });
     context('when requesting 300% of all documents', function() {
-      var opts = {
+      const opts = {
         size: 3000
       };
       it('does not contain a $sample in the pipeline', function(done) {
-        var sampler = new NativeSampler(db, 'haystack', opts);
+        const sampler = new NativeSampler(db, 'haystack', opts);
         sampler
           .on('data', function() {})
           .on('end', function() {
@@ -122,16 +124,16 @@ describe('mongodb-collection-sample', function() {
     });
     context('when using fields', function() {
       before(skipIfSampleUnsupported);
-      var opts = {
+      const opts = {
         size: 30,
         fields: { is_even: 1, double: 1 }
       };
       it('has a $project stage at the end of the pipeline', function(done) {
-        var sampler = new NativeSampler(db, 'haystack', opts);
+        const sampler = new NativeSampler(db, 'haystack', opts);
         sampler
           .on('data', function() {})
           .on('end', function() {
-            var lastStage = sampler.pipeline[sampler.pipeline.length - 1];
+            const lastStage = sampler.pipeline[sampler.pipeline.length - 1];
             expect(lastStage).to.have.all.keys('$project');
             expect(lastStage.$project).to.be.deep.equal({
               is_even: 1,
@@ -143,16 +145,16 @@ describe('mongodb-collection-sample', function() {
     });
     context('when using query', function() {
       before(skipIfSampleUnsupported);
-      var opts = {
+      const opts = {
         size: 10,
         query: { is_even: 1 }
       };
       it('has a $match stage at the beginning of the pipeline', function(done) {
-        var sampler = new NativeSampler(db, 'haystack', opts);
+        const sampler = new NativeSampler(db, 'haystack', opts);
         sampler
           .on('data', function() {})
           .on('end', function() {
-            var firstStage = sampler.pipeline[0];
+            const firstStage = sampler.pipeline[0];
             expect(firstStage).to.have.all.keys('$match');
             expect(firstStage.$match).to.be.deep.equal({ is_even: 1 });
             done();
@@ -162,20 +164,22 @@ describe('mongodb-collection-sample', function() {
   });
 
   describe('raw buffer', function() {
-    var db;
+    let db;
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+      const client = new MongoClient('mongodb://localhost:27018/test');
+
+      client.connect(function(
         err,
-        client
+        connectedClient
       ) {
         if (err) {
           return done(err);
         }
-        db = client.db('test');
+        db = connectedClient.db('test');
 
-        var docs = _range(0, 150).map(function(i) {
+        const docs = _range(0, 150).map(function(i) {
           return {
             _id: 'needle_' + i,
             is_even: i % 2,
@@ -216,20 +220,22 @@ describe('mongodb-collection-sample', function() {
   // FYI: takes a while, so will only run with `test=BIG_SAMPLE npm run test`
   if (process.env.test === 'BIG_SAMPLE') {
     describe('raw buffer over a large set of documents', function() {
-      var db;
+      let db;
 
       before(function(done) {
         this.timeout(3000000);
-        mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+        const client = new MongoClient('mongodb://localhost:27018/test');
+
+        client.connect(function(
           err,
-          client
+          connectedClient
         ) {
           if (err) {
             return done(err);
           }
-          db = client.db('test');
+          db = connectedClient.db('test');
 
-          var docs = _range(2000000).map(function(i) {
+          const docs = _range(2000000).map(function(i) {
             return {
               _id: 'needle_' + i,
               is_even: i % 2,
@@ -266,20 +272,22 @@ describe('mongodb-collection-sample', function() {
   }
 
   describe('promoteValues', function() {
-    var db;
+    let db;
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+      const client = new MongoClient('mongodb://localhost:27018/test');
+
+      client.connect(function(
         err,
-        client
+        connectedClient
       ) {
         if (err) {
           return done(err);
         }
-        db = client.db('test');
+        db = connectedClient.db('test');
 
-        var docs = _range(0, 150).map(function(i) {
+        const docs = _range(0, 150).map(function(i) {
           return {
             _id: 'needle_' + i,
             is_even: i % 2,
@@ -400,20 +408,22 @@ describe('mongodb-collection-sample', function() {
   });
 
   describe('Reservoir Sampler chunk sampling', function() {
-    var db;
+    let db;
 
     before(function(done) {
       this.timeout(30000);
-      mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+      const client = new MongoClient('mongodb://localhost:27018/test');
+
+      client.connect(function(
         err,
-        client
+        connectedClient
       ) {
         if (err) {
           return done(err);
         }
-        db = client.db('test');
+        db = connectedClient.db('test');
 
-        var docs = _range(0, 15000).map(function(i) {
+        const docs = _range(0, 15000).map(function(i) {
           return {
             _id: 'needle_' + i,
             is_even: i % 2
@@ -441,7 +451,7 @@ describe('mongodb-collection-sample', function() {
     });
 
     it('should sample 10000 docs in several chunks', function(done) {
-      var seen = 0;
+      let seen = 0;
       sample(db, 'haystack', {
         size: 10000,
         chunkSize: 1234
@@ -462,19 +472,21 @@ describe('mongodb-collection-sample', function() {
   });
 
   describe('functional', function() {
-    var db;
+    let db;
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+      const client = new MongoClient('mongodb://localhost:27018/test');
+
+      client.connect(function(
         err,
-        client
+        connectedClient
       ) {
         if (err) {
           return done(err);
         }
-        db = client.db('test');
+        db = connectedClient.db('test');
 
-        var docs = _range(0, 1000).map(function(i) {
+        const docs = _range(0, 1000).map(function(i) {
           return {
             _id: 'needle_' + i,
             is_even: i % 2
@@ -494,7 +506,7 @@ describe('mongodb-collection-sample', function() {
     });
 
     it('should should default the sample size to `5`', function(done) {
-      var seen = 0;
+      let seen = 0;
       sample(db, 'haystack').pipe(
         es.through(
           function(doc) {
@@ -511,8 +523,8 @@ describe('mongodb-collection-sample', function() {
     });
 
     it('should allow specifying a query', function(done) {
-      var docs = [];
-      var options = {
+      const docs = [];
+      const options = {
         size: 10,
         query: {
           is_even: 1
@@ -538,7 +550,7 @@ describe('mongodb-collection-sample', function() {
     });
 
     it('should get a sample of 10 documents', function(done) {
-      var seen = 0;
+      let seen = 0;
       sample(db, 'haystack').pipe(
         es.through(
           function(doc) {
@@ -559,7 +571,7 @@ describe('mongodb-collection-sample', function() {
         'the requested sample size is larger than the ' +
         'collection size',
       function(done) {
-        var seen = 0;
+        let seen = 0;
         sample(db, 'haystack', {
           size: 2000
         }).pipe(
@@ -582,47 +594,51 @@ describe('mongodb-collection-sample', function() {
   describe('topology', function() {
     this.timeout(30000);
 
-    var dbPrim;
-    var dbSec;
-    var clientPrim;
-    var clientSec;
-    var options = {
+    let dbPrim;
+    let dbSec;
+    let clientPrim;
+    let clientSec;
+    const options = {
       readPreference: ReadPreference.primaryPreferred
     };
 
     before(function(done) {
-      mongodb.MongoClient.connect('mongodb://localhost:27018/test', function(
+      const client = new MongoClient('mongodb://localhost:27018/test');
+
+      client.connect(function(
         err,
-        client
+        connectedClient
       ) {
         if (err) {
           return done(err);
         }
-        clientPrim = client;
-        dbPrim = client.db('test');
-        var docs = _range(0, 100).map(function(i) {
+        clientPrim = connectedClient;
+        dbPrim = connectedClient.db('test');
+        const docs = _range(0, 100).map(function(i) {
           return {
             _id: 'needle_' + i,
             is_even: i % 2
           };
         });
         dbPrim.collection('haystack').insertMany(docs, function() {
-          mongodb.MongoClient.connect(
-            'mongodb://localhost:27018/test',
-            function(errInsert, _client) {
-              if (errInsert) {
-                return done(errInsert);
-              }
-              clientSec = _client;
-              dbSec = _client.db('test');
-              dbSec
-                .collection('haystack', options)
-                .countDocuments(function(errCount) {
-                  expect(errCount).to.not.exist;
-                  done();
-                });
+          const client2 = new MongoClient('mongodb://localhost:27018/test');
+
+          client2.connect(function(
+            errInsert,
+            _client
+          ) {
+            if (errInsert) {
+              return done(errInsert);
             }
-          );
+            clientSec = _client;
+            dbSec = _client.db('test');
+            dbSec
+              .collection('haystack', options)
+              .countDocuments(function(errCount) {
+                expect(errCount).to.not.exist;
+                done();
+              });
+          });
         });
       });
     });
@@ -639,14 +655,14 @@ describe('mongodb-collection-sample', function() {
     });
 
     it('should sample correctly when connected to a secondary node', function(done) {
-      var opts = {
+      const opts = {
         size: 5,
         query: {}
       };
       // Get a stream of sample documents from the collection and make sure
       // 5 documents have been returned.
-      var count = 0;
-      var stream = sample(dbSec, 'haystack', opts);
+      let count = 0;
+      const stream = sample(dbSec, 'haystack', opts);
       stream.on('error', function(err2) {
         done(err2);
       });
